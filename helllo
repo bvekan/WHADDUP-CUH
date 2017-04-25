@@ -1,0 +1,144 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdlib>
+#include <sstream>
+#include <stdio.h>
+#include <string.h>
+
+using namespace std;
+
+vector<string> args;
+//vector<string> info;                                                           
+string process;
+string info;
+int pipe=0;
+int pro=1;
+string STDIN = "STDIN_FILENO";
+string STDOUT = "STDOUT_FILENO";
+string STDERR = "STDERR_FILENO";
+
+bool white(string);
+int pipes(string);
+void parse(vector<string>);
+void reset();
+void parseCommand(string);
+void processes(string);
+void job(string);
+
+int main(){
+  while(1){
+    cout << "repl$ ";
+    string arg;
+    getline(cin,arg);
+    int pipe=0;
+    istringstream iss(arg);
+    bool emptySpaces = white(arg);
+    parseCommand(arg);
+    job(arg);
+    cout << endl;
+    pipe = pipes(arg);
+    processes(arg);
+    cout << pipe  << " pipe(s)" << endl;
+    cout << pro << " process(es)" << endl;
+    cout << endl;
+    //parseCommand(arg);                                                         
+    parse (args);
+    reset();
+  }//while                                                                       
+  return EXIT_SUCCESS;
+}//main                         
+bool white(string s){
+  if (s.find_first_not_of(" ") != string::npos) return false;
+  else return true;
+}
+
+int pipes(string s){
+  int pipes=0;
+  for (unsigned int i=0;i<s.length();++i){
+    if(s.at(i)=='|') ++pipes;
+  }
+  return pipes;
+}
+
+void processes(string s){
+  for (unsigned int i=0;i<s.length();++i){
+    if(s.at(i)=='|') ++pro;
+  }
+}
+
+void parseCommand(string s){
+  istringstream iss(s);
+  string temp;
+  if (s.empty()||white(s)||s=="\t") return;//check for tabs                      
+  while(std::getline(iss,temp,'|')){
+    while (temp.at(0)==' ') temp.erase(0,1);
+    args.push_back(temp);
+  }//while                                                                       
+}
+
+void parse(vector<string> v){
+  vector<string> temp;
+  for (unsigned int i=0; i<args.size();++i) {
+    istringstream iss(v.at(i));
+    while (std::getline(iss,info,' ')){
+      if (white(info)) continue;
+      else if (info == ">" || info ==">>" || info =="<" || info =="e>" || info =\
+="e>>"){
+        //job(info);                                                             
+        break;
+      }
+      else temp.push_back(info);
+
+    }
+
+    cout << "Process " << i << " argv:" << endl;
+    for (unsigned int i=0;i<temp.size();++i){
+      cout << i << ": " << temp.at(i) << endl;
+    }
+temp.clear();
+  }//for                                                                         
+}
+
+void reset() {
+  args.clear();
+  pipe=0;
+  pro=1;
+}
+
+void job(string s){
+  for (unsigned int i=0; i <s.size();++i){
+    if (s.compare(">")==0||s.compare(">>")==0||s.compare("<")==0||s.compare("e>"\
+)==0||s.compare("e>>")==0){
+      if (s.compare(">")){
+        STDOUT.clear();
+        STDOUT = s[i+1];
+        STDOUT.append(" (truncate)");
+      }//if >                                                                    
+      if (s.compare(">>")){
+        STDOUT.clear();
+        STDOUT = s[i+1];
+        STDOUT.append(" (append)");
+      }
+      if (s.compare("<")){
+        STDIN.clear();
+        STDIN = s[i+1];
+      }
+      if (s.compare("e>>")){
+        STDERR.clear();
+        STDERR = s[i+1];
+        STDERR.append(" (append)");
+      }
+      if (s.compare("e>")){
+        STDERR.clear();
+        STDERR = s[i+1];
+        STDERR.append(" (truncate)");
+      }
+    }//if all                                                                    
+  }//for                                                                         
+  cout << "Job STDIN = " << STDIN << endl;
+  cout << "Job STDOUT = " << STDOUT << endl;
+  cout << "Job STDERR = " << STDERR << endl;
+  cout << endl;
+}//job                                                                           
+
