@@ -1,0 +1,185 @@
+#include <vector>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <cstdlib>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+using namespace std;
+
+bool white(string);
+int pipes(string);
+void parse(vector<string>);
+void reset();
+void parseCommand(string);
+void processes(string);
+void job(string);
+
+vector<string> args;
+string process;
+string info;
+int piped=0;
+int pro=1;
+string STDIN = "STDIN_FILENO";
+string STDOUT = "STDOUT_FILENO";
+string STDERR = "STDERR_FILENO";
+
+int main(){
+  char cwd[1084];
+  char * path = getcwd(cwd, (sizeof cwd));
+  char* home;
+  char* rest;
+  home = getenv("HOME");
+  while (true){  
+    string home = getenv("HOME");
+    char cwd[1024];
+    string path = getcwd(cwd, sizeof(cwd)); 
+    int length = home.length();
+    
+
+    if(path.find(home) == 0){ 
+      path = path.substr(length);
+      cout << "1730sh:~" << path << "$ ";
+    }
+    else
+      cout << "1730sh:" << path << "$ ";
+    string arg;
+    getline(cin,arg);
+    int pipe=0;
+    istringstream iss(arg);
+    bool emptySpaces = white(arg);
+    parseCommand(arg);
+    job(arg);
+    cout << endl;
+    piped = pipes(arg);
+    processes(arg);
+    cout << piped  << " pipe(s)" << endl;
+    cout << pro << " process(es)" << endl;
+    cout << endl;
+    parse(args);
+    reset(); 
+  }                                                                             
+  return EXIT_SUCCESS;
+}//main 
+
+bool white(string s){
+  if (s.find_first_not_of(" ") != string::npos) return false;
+  else return true;
+}
+
+int pipes(string s){
+  int pipes=0;
+  for (unsigned int i=0;i<s.length();++i){
+    if(s.at(i)=='|') ++pipes;
+  }
+  return pipes;
+}
+
+void processes(string s){
+  for (unsigned int i=0;i<s.length();++i){
+    if(s.at(i)=='|') ++pro;
+  }
+}
+
+void parseCommand(string s){
+  istringstream iss(s);
+  string temp;
+  if (s.empty()||white(s)||s=="\t") return;//check for tabs                      
+  while(std::getline(iss,temp,'|')){
+    while (temp.at(0)==' ') temp.erase(0,1);
+    args.push_back(temp);
+  }//while                                                                       
+}
+
+void parse(vector<string> v){
+  vector<string> temp;
+  for (unsigned int i=0; i<args.size();++i) {
+    istringstream iss(v.at(i));
+    while (std::getline(iss,info,' ')){
+      if (white(info)) continue;
+      else if (info.compare(">") ==0 || info.compare(">>") ==0|| info.compare("<") ==0|| info.compare("e>") ==0|| info.compare("e>>")==0
+	{
+	  if (s.compare(">")){
+	    STDOUT.clear();
+	    STDOUT = s[i+1];
+	    STDOUT.append(" (truncate)");
+	  }//if >                                                                    
+	  if (s.compare(">>")){
+	    STDOUT.clear();
+	    STDOUT = s[i+1];
+	    STDOUT.append(" (append)");
+	  }
+	  if (s.compare("<")){
+	    STDIN.clear();
+	    STDIN = s[i+1];
+	  }
+	  if (s.compare("e>>")){
+	    STDERR.clear();
+	    STDERR = s[i+1];
+	    STDERR.append(" (append)");
+	  }
+	  if (s.compare("e>")){
+	    STDERR.clear();
+	    STDERR = s[i+1];
+	    STDERR.append(" (truncate)");
+	  }
+	
+	}
+	else temp.push_back(info);
+	cout << "Job STDIN = " << STDIN << endl;
+	cout << "Job STDOUT = " << STDOUT << endl;
+	cout << "Job STDERR = " << STDERR << endl;
+	cout << endl;
+	
+	cout << "Process " << i << " argv:" << endl;
+	for (unsigned int i=0;i<temp.size();++i){
+	  cout << i << ": " << temp.at(i) << endl;
+	}
+	temp.clear();
+		//for
+}
+      
+      
+  void reset() {
+  args.clear();
+  piped=0;
+  pro=1;
+}
+
+void job(string s){
+  for (unsigned int i=0; i <s.length();++i){
+    if (s.compare(">")==0||s.compare(">>")==0||s.compare("<")==0||s.compare("e>")==0||s.compare("e>>")==0){
+      if (s.compare(">")){
+	STDOUT.clear();
+	STDOUT = s[i+1];
+	STDOUT.append(" (truncate)");
+      }//if >                                                                    
+      if (s.compare(">>")){
+	STDOUT.clear();
+	STDOUT = s[i+1];
+	STDOUT.append(" (append)");
+      }
+      if (s.compare("<")){
+	STDIN.clear();
+	STDIN = s[i+1];
+      }
+      if (s.compare("e>>")){
+	STDERR.clear();
+	STDERR = s[i+1];
+	STDERR.append(" (append)");
+      }
+      if (s.compare("e>")){
+	STDERR.clear();
+	STDERR = s[i+1];
+	STDERR.append(" (truncate)");
+	}
+    }//if all                                                                    
+  }//for                                                                         
+  cout << "Job STDIN = " << STDIN << endl;
+  cout << "Job STDOUT = " << STDOUT << endl;
+  cout << "Job STDERR = " << STDERR << endl;
+  cout << endl;
+}//job 
